@@ -10,34 +10,34 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-TIME_FRAME_ID_VARIABLES_NWEA = [
+TIME_FRAME_ID_VARIABLES = [
     'school_year',
     'term'
 ]
 
-STUDENT_ID_VARIABLES_NWEA = [
+STUDENT_ID_VARIABLES = [
     'legal_entity',
-    'student_id_nwea'
+    'student_id'
 ]
 
-STUDENT_INFO_VARIABLES_NWEA = [
+STUDENT_INFO_VARIABLES = [
     'first_name',
     'last_name'
 ]
 
-STUDENT_ASSIGNMENT_VARIABLES_NWEA = [
+STUDENT_ASSIGNMENT_VARIABLES = [
     'school',
     'teacher_last_first',
     'classroom',
     'grade'
 ]
 
-ASSESSMENT_ID_VARIABLES_NWEA = [
+ASSESSMENT_ID_VARIABLES = [
     'subject',
     'course'
 ]
 
-RESULTS_VARIABLES_NWEA = [
+RESULTS_VARIABLES = [
     'test_date',
     'rit_score',
     'rit_score_sem',
@@ -45,13 +45,13 @@ RESULTS_VARIABLES_NWEA = [
     'percentile_se'
 ]
 
-TERMS_NWEA = (
+TERMS = (
     'Fall',
     'Winter',
     'Spring'
 )
 
-ASSESSMENTS_NWEA = collections.OrderedDict((
+ASSESSMENTS = collections.OrderedDict((
     ('Language Arts', [
         'Reading',
         'Reading (Spanish)',
@@ -62,15 +62,15 @@ ASSESSMENTS_NWEA = collections.OrderedDict((
     ])
 ))
 
-SUBJECTS_NWEA = list(ASSESSMENTS_NWEA.keys())
+SUBJECTS = list(ASSESSMENTS.keys())
 
-COURSES_NWEA=list(itertools.chain(*ASSESSMENTS_NWEA.values()))
+COURSES=list(itertools.chain(*ASSESSMENTS.values()))
 
 DEFAULT_MIN_GROWTH_DAYS = 60
 
 DEFAULT_SCHOOL_YEAR_DURATION_MONTHS = 9
 
-def fetch_results_local_directory_nwea(
+def fetch_results_local_directory(
     path,
     file_extensions=['.csv', '.CSV']
 ):
@@ -92,22 +92,22 @@ def fetch_results_local_directory_nwea(
         paths.append(file_path)
     if len(paths) == 0:
         raise ValueError('No files of type {} found in directory'.format(file_extensions))
-    results = fetch_results_local_files_nwea(paths)
+    results = fetch_results_local_files(paths)
     return results
 
-def fetch_results_local_files_nwea(
+def fetch_results_local_files(
     paths
 ):
     results_list = list()
     for path in paths:
-        results_file = fetch_results_local_file_nwea(
+        results_file = fetch_results_local_file(
             path=path
         )
         results_list.append(results_file)
     results = pd.concat(results_list)
     return results
 
-def fetch_results_local_file_nwea(
+def fetch_results_local_file(
     path
 ):
     if not os.path.exists(path):
@@ -120,13 +120,13 @@ def fetch_results_local_file_nwea(
     )
     return results
 
-def parse_results_nwea(results):
-    test_events = extract_test_events_nwea(results)
-    student_info, student_info_changes = extract_student_info_nwea(results)
-    student_assignments = extract_student_assignments_nwea(results)
+def parse_results(results):
+    test_events = extract_test_events(results)
+    student_info, student_info_changes = extract_student_info(results)
+    student_assignments = extract_student_assignments(results)
     return test_events, student_info, student_info_changes, student_assignments
 
-def extract_test_events_nwea(
+def extract_test_events(
     results
 ):
     test_events = (
@@ -148,17 +148,17 @@ def extract_test_events_nwea(
     test_events['school_year'] = test_events['term_school_year'].apply(lambda x: x.split(' ')[1])
     test_events['term'] = pd.Categorical(
         test_events['term'],
-        categories=TERMS_NWEA,
+        categories=TERMS,
         ordered=True
     )
     test_events['subject'] = pd.Categorical(
         test_events['subject'],
-        categories=SUBJECTS_NWEA,
+        categories=SUBJECTS,
         ordered=True
     )
     test_events['course'] = pd.Categorical(
         test_events['course'],
-        categories=COURSES_NWEA,
+        categories=COURSES,
         ordered=True
     )
     test_events['test_date'] = test_events['test_date'].apply(wf_core_data.utils.to_date)
@@ -167,23 +167,23 @@ def extract_test_events_nwea(
     test_events['percentile'] = pd.to_numeric(test_events['percentile']).astype('float')
     test_events['percentile_se'] = pd.to_numeric(test_events['percentile_se'].replace('<1', 0.5)).astype('float')
     test_events = test_events.reindex(columns=list(itertools.chain(
-        TIME_FRAME_ID_VARIABLES_NWEA,
-        ASSESSMENT_ID_VARIABLES_NWEA,
-        STUDENT_ID_VARIABLES_NWEA,
-        RESULTS_VARIABLES_NWEA
+        TIME_FRAME_ID_VARIABLES,
+        ASSESSMENT_ID_VARIABLES,
+        STUDENT_ID_VARIABLES,
+        RESULTS_VARIABLES
     )))
     test_events.set_index(
         list(itertools.chain(
-            TIME_FRAME_ID_VARIABLES_NWEA,
-            ASSESSMENT_ID_VARIABLES_NWEA,
-            STUDENT_ID_VARIABLES_NWEA
+            TIME_FRAME_ID_VARIABLES,
+            ASSESSMENT_ID_VARIABLES,
+            STUDENT_ID_VARIABLES
         )),
         inplace=True
     )
     test_events.sort_index(inplace=True)
     return test_events
 
-def extract_student_info_nwea(
+def extract_student_info(
     results
 ):
     student_info = (
@@ -201,29 +201,29 @@ def extract_student_info_nwea(
     student_info = (
         student_info
         .reindex(columns=list(itertools.chain(
-            STUDENT_ID_VARIABLES_NWEA,
-            TIME_FRAME_ID_VARIABLES_NWEA,
-            STUDENT_INFO_VARIABLES_NWEA
+            STUDENT_ID_VARIABLES,
+            TIME_FRAME_ID_VARIABLES,
+            STUDENT_INFO_VARIABLES
         )))
         .drop_duplicates()
     )
     student_info_changes = (
         student_info
-        .groupby(STUDENT_ID_VARIABLES_NWEA)
-        .filter(lambda group: len(group.drop_duplicates(subset=STUDENT_INFO_VARIABLES_NWEA)) > 1)
+        .groupby(STUDENT_ID_VARIABLES)
+        .filter(lambda group: len(group.drop_duplicates(subset=STUDENT_INFO_VARIABLES)) > 1)
     )
     student_info = (
         student_info
-        .sort_values(TIME_FRAME_ID_VARIABLES_NWEA)
-        .drop(columns=TIME_FRAME_ID_VARIABLES_NWEA)
-        .groupby(STUDENT_INFO_VARIABLES_NWEA)
+        .sort_values(TIME_FRAME_ID_VARIABLES)
+        .drop(columns=TIME_FRAME_ID_VARIABLES)
+        .groupby(STUDENT_INFO_VARIABLES)
         .tail(1)
-        .set_index(STUDENT_ID_VARIABLES_NWEA)
+        .set_index(STUDENT_ID_VARIABLES)
         .sort_index()
     )
     return student_info, student_info_changes
 
-def extract_student_assignments_nwea(
+def extract_student_assignments(
     results
 ):
     student_assignments = (
@@ -243,20 +243,20 @@ def extract_student_assignments_nwea(
     student_assignments = (
         student_assignments
         .reindex(columns=list(itertools.chain(
-            STUDENT_ID_VARIABLES_NWEA,
-            TIME_FRAME_ID_VARIABLES_NWEA,
-            STUDENT_ASSIGNMENT_VARIABLES_NWEA
+            STUDENT_ID_VARIABLES,
+            TIME_FRAME_ID_VARIABLES,
+            STUDENT_ASSIGNMENT_VARIABLES
         )))
         .drop_duplicates()
         .set_index(list(itertools.chain(
-            STUDENT_ID_VARIABLES_NWEA,
-            TIME_FRAME_ID_VARIABLES_NWEA
+            STUDENT_ID_VARIABLES,
+            TIME_FRAME_ID_VARIABLES
         )))
         .sort_index()
     )
     return student_assignments
 
-def summarize_by_test_nwea(
+def summarize_by_test(
     test_events,
     student_assignments,
     grouping_variables = [
@@ -303,7 +303,7 @@ def summarize_by_test_nwea(
         )
     return tests
 
-def summarize_by_student_nwea(
+def summarize_by_student(
     test_events,
     student_info,
     student_assignments,
@@ -315,10 +315,10 @@ def summarize_by_student_nwea(
 ):
     new_index_variables = list(itertools.chain(
         new_time_index,
-        ASSESSMENT_ID_VARIABLES_NWEA,
-        STUDENT_ID_VARIABLES_NWEA
+        ASSESSMENT_ID_VARIABLES,
+        STUDENT_ID_VARIABLES
     ))
-    unstack_variables = copy.deepcopy(TIME_FRAME_ID_VARIABLES_NWEA)
+    unstack_variables = copy.deepcopy(TIME_FRAME_ID_VARIABLES)
     for new_time_index_variable in new_time_index:
         unstack_variables.remove(new_time_index_variable)
     students = (
@@ -398,12 +398,12 @@ def summarize_by_student_nwea(
         .reset_index()
         .sort_values(['school_year', 'term'])
         .groupby(list(itertools.chain(
-            STUDENT_ID_VARIABLES_NWEA,
+            STUDENT_ID_VARIABLES,
             new_time_index
         )))
         .tail(1)
         .set_index(list(itertools.chain(
-            STUDENT_ID_VARIABLES_NWEA,
+            STUDENT_ID_VARIABLES,
             new_time_index
         )))
     )
@@ -413,8 +413,8 @@ def summarize_by_student_nwea(
         on=latest_student_assignments.index.names
     )
     students = students.reindex(columns=list(itertools.chain(
-        STUDENT_INFO_VARIABLES_NWEA,
-        STUDENT_ASSIGNMENT_VARIABLES_NWEA,
+        STUDENT_INFO_VARIABLES,
+        STUDENT_ASSIGNMENT_VARIABLES,
         underlying_data_columns,
         [
             'rit_score_starting_date',

@@ -1,4 +1,4 @@
-import wf_core_data.rosters.shared_constants
+import wf_core_data
 import pandas as pd
 import os
 import logging
@@ -91,7 +91,7 @@ NWEA_TESTABLE_GRADES = [
     '12'
 ]
 
-def create_nwea_roster_and_write_locally(
+def create_roster_and_write_locally(
     base_directory,
     filename_suffix,
     master_roster_subdirectory='master_rosters',
@@ -112,10 +112,10 @@ def create_nwea_roster_and_write_locally(
         )
     )
     master_roster_data = pd.read_pickle(filename)
-    nwea_roster_data = wf_core_data.create_nwea_roster(
+    nwea_roster_data = create_roster(
         master_roster_data=master_roster_data
     )
-    wf_core_data.write_nwea_rosters_local(
+    write_rosters_local(
         nwea_roster_data=nwea_roster_data,
         base_directory=base_directory,
         subdirectory=nwea_roster_subdirectory,
@@ -123,7 +123,7 @@ def create_nwea_roster_and_write_locally(
         filename_suffix=filename_suffix
     )
 
-def create_nwea_roster(
+def create_roster(
     master_roster_data
 ):
     ## Rename fields
@@ -202,7 +202,7 @@ def create_nwea_roster(
     ))
     return nwea_roster_data
 
-def write_nwea_rosters_local(
+def write_rosters_local(
     nwea_roster_data,
     base_directory,
     subdirectory='nwea_rosters',
