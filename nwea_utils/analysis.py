@@ -17,7 +17,7 @@ TIME_FRAME_ID_VARIABLES = [
 
 STUDENT_ID_VARIABLES = [
     'legal_entity',
-    'student_id'
+    'student_id_nwea'
 ]
 
 STUDENT_INFO_VARIABLES = [
@@ -445,7 +445,7 @@ def summarize_by_student(
         )
     return students
 
-def summarize_by_group_nwea(
+def summarize_by_group(
     students,
     grouping_variables=[
         'school_year',
