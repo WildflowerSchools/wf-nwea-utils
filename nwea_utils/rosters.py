@@ -1,4 +1,5 @@
-import wf_core_data
+import wf_core_data.rosters.shared_functions
+import wf_core_data.rosters.shared_constants
 import pandas as pd
 import os
 import logging
