@@ -216,7 +216,7 @@ def extract_student_info(
         student_info
         .sort_values(TIME_FRAME_ID_VARIABLES)
         .drop(columns=TIME_FRAME_ID_VARIABLES)
-        .groupby(STUDENT_INFO_VARIABLES)
+        .groupby(STUDENT_ID_VARIABLES)
         .tail(1)
         .set_index(STUDENT_ID_VARIABLES)
         .sort_index()
