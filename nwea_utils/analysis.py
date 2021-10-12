@@ -172,15 +172,16 @@ def extract_test_events(
         STUDENT_ID_VARIABLES,
         RESULTS_VARIABLES
     )))
-    test_events.set_index(
-        list(itertools.chain(
-            TIME_FRAME_ID_VARIABLES,
-            ASSESSMENT_ID_VARIABLES,
-            STUDENT_ID_VARIABLES
-        )),
-        inplace=True
+    test_events = (
+        test_events
+        .drop_duplicates()
+        .set_index(list(itertools.chain(
+                TIME_FRAME_ID_VARIABLES,
+                ASSESSMENT_ID_VARIABLES,
+                STUDENT_ID_VARIABLES
+        )))
+        .sort_index()
     )
-    test_events.sort_index(inplace=True)
     return test_events
 
 def extract_student_info(
@@ -336,7 +337,9 @@ def summarize_by_student(
             rit_score_starting_date=('test_date', lambda x: x.dropna().iloc[0]),
             rit_score_ending_date=('test_date', lambda x: x.dropna().iloc[-1]),
             starting_rit_score=('rit_score', lambda x: x.dropna().iloc[0]),
+            starting_rit_score_sem=('rit_score_sem', lambda x: x.dropna().iloc[0]),
             ending_rit_score=('rit_score', lambda x: x.dropna().iloc[-1]),
+            ending_rit_score_sem=('rit_score_sem', lambda x: x.dropna().iloc[-1])
         )
     )
     percentiles = (
@@ -348,7 +351,9 @@ def summarize_by_student(
             percentile_starting_date=('test_date', lambda x: x.dropna().iloc[0]),
             percentile_ending_date=('test_date', lambda x: x.dropna().iloc[-1]),
             starting_percentile=('percentile', lambda x: x.dropna().iloc[0]),
+            starting_percentile_se=('percentile_se', lambda x: x.dropna().iloc[0]),
             ending_percentile=('percentile', lambda x: x.dropna().iloc[-1]),
+            ending_percentile_se=('percentile_se', lambda x: x.dropna().iloc[-1])
         )
     )
     students = (
@@ -373,8 +378,14 @@ def summarize_by_student(
         students['ending_rit_score'],
         students['starting_rit_score']
     )
+    students['rit_score_growth_se'] = np.sqrt(np.add(
+        np.square(students['starting_rit_score_sem']),
+        np.square(students['ending_rit_score_sem'])
+    ))
     students.loc[students['rit_score_num_days'] < min_growth_days, 'rit_score_growth'] = np.nan
+    students.loc[students['rit_score_num_days'] < min_growth_days, 'rit_score_growth_se'] = np.nan
     students['rit_score_growth_per_school_year'] = 365.25*(school_year_duration_months/12)*students['rit_score_growth']/students['rit_score_num_days']
+    students['rit_score_growth_per_school_year_se'] = 365.25*(school_year_duration_months/12)*students['rit_score_growth_se']/students['rit_score_num_days']
     students['percentile_num_days'] = (
         np.subtract(
             students['percentile_ending_date'],
@@ -386,8 +397,14 @@ def summarize_by_student(
         students['ending_percentile'],
         students['starting_percentile']
     )
+    students['percentile_growth_se'] = np.sqrt(np.add(
+        np.square(students['starting_percentile_se']),
+        np.square(students['ending_percentile_se'])
+    ))
     students.loc[students['percentile_num_days'] < min_growth_days, 'percentile_growth'] = np.nan
+    students.loc[students['percentile_num_days'] < min_growth_days, 'percentile_growth_se'] = np.nan
     students['percentile_growth_per_school_year'] = 365.25*(school_year_duration_months/12)*students['percentile_growth']/students['percentile_num_days']
+    students['percentile_growth_per_school_year_se'] = 365.25*(school_year_duration_months/12)*students['percentile_growth_se']/students['percentile_num_days']
     students = students.join(
         student_info,
         how='left',
@@ -421,16 +438,24 @@ def summarize_by_student(
             'rit_score_ending_date',
             'rit_score_num_days',
             'starting_rit_score',
+            'starting_rit_score_sem',
             'ending_rit_score',
+            'ending_rit_score_sem',
             'rit_score_growth',
+            'rit_score_growth_se',
             'rit_score_growth_per_school_year',
+            'rit_score_growth_per_school_year_se',
             'percentile_starting_date',
             'percentile_ending_date',
             'percentile_num_days',
             'starting_percentile',
+            'starting_percentile_se',
             'ending_percentile',
+            'ending_percentile_se',
             'percentile_growth',
+            'percentile_growth_se',
             'percentile_growth_per_school_year',
+            'percentile_growth_per_school_year_se'
         ]
     )))
     if filter_dict is not None:
