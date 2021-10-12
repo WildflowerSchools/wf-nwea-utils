@@ -31,6 +31,7 @@ setup(
     include_package_data=True,
     description='Tools for working with NWEA assessments data',
     long_description=open('README.md').read(),
+    long_description_content_type='text/markdown',
     url='https://github.com/WildflowerSchools/wf-nwea-utils',
     author='Theodore Quinn',
     author_email='ted.quinn@wildflowerschools.org',
