@@ -491,35 +491,35 @@ def summarize_by_group(
             mean_rit_score_growth=('rit_score_growth', 'mean'),
             mean_rit_score_growth_se=(
                 'rit_score_growth_se',
-                lambda x: np.sqrt(np.nansum(np.square(x))/np.sum(np.isfinite(x))**2)
+                lambda x: np.sqrt(np.nansum(np.square(x))/np.sum(np.isfinite(x))**2) if np.sum(np.isfinite(x)) > 0 else np.nan
             ),
             mean_rit_score_growth_per_school_year=('rit_score_growth_per_school_year', 'mean'),
             mean_rit_score_growth_per_school_year_se=(
                 'rit_score_growth_per_school_year_se',
-                lambda x: np.sqrt(np.nansum(np.square(x))/np.sum(np.isfinite(x))**2)
+                lambda x: np.sqrt(np.nansum(np.square(x))/np.sum(np.isfinite(x))**2) if np.sum(np.isfinite(x)) > 0 else np.nan
             ),
             num_valid_starting_percentile=('starting_percentile', 'count'),
             mean_starting_percentile=('starting_percentile', 'mean'),
             mean_starting_percentile_se=(
                 'starting_percentile_se',
-                lambda x: np.sqrt(np.nansum(np.square(x))/np.sum(np.isfinite(x))**2)
+                lambda x: np.sqrt(np.nansum(np.square(x))/np.sum(np.isfinite(x))**2) if np.sum(np.isfinite(x)) > 0 else np.nan
             ),
             num_valid_ending_percentile=('ending_percentile', 'count'),
             mean_ending_percentile=('ending_percentile', 'mean'),
             mean_ending_percentile_se=(
                 'ending_percentile_se',
-                lambda x: np.sqrt(np.nansum(np.square(x))/np.sum(np.isfinite(x))**2)
+                lambda x: np.sqrt(np.nansum(np.square(x))/np.sum(np.isfinite(x))**2) if np.sum(np.isfinite(x)) > 0 else np.nan
             ),
             num_valid_percentile_growth=('percentile_growth', 'count'),
             mean_percentile_growth=('percentile_growth', 'mean'),
             mean_percentile_growth_se=(
                 'percentile_growth_se',
-                lambda x: np.sqrt(np.nansum(np.square(x))/np.sum(np.isfinite(x))**2)
+                lambda x: np.sqrt(np.nansum(np.square(x))/np.sum(np.isfinite(x))**2) if np.sum(np.isfinite(x)) > 0 else np.nan
             ),
             mean_percentile_growth_per_school_year=('percentile_growth_per_school_year', 'mean'),
             mean_percentile_growth_per_school_year_se=(
                 'percentile_growth_per_school_year_se',
-                lambda x: np.sqrt(np.nansum(np.square(x))/np.sum(np.isfinite(x))**2)
+                lambda x: np.sqrt(np.nansum(np.square(x))/np.sum(np.isfinite(x))**2) if np.sum(np.isfinite(x)) > 0 else np.nan
             )
         )
         .dropna(how='all')
