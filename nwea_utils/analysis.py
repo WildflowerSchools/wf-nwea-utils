@@ -487,6 +487,18 @@ def summarize_by_group(
         .groupby(grouping_variables)
         .agg(
             num_test_results=('student_id_nwea', 'count'),
+            num_valid_starting_rit_score=('starting_rit_score', 'count'),
+            mean_starting_rit_score=('starting_rit_score', 'mean'),
+            mean_starting_rit_score_se=(
+                'starting_rit_score_sem',
+                lambda x: np.sqrt(np.nansum(np.square(x))/np.sum(np.isfinite(x))**2) if np.sum(np.isfinite(x)) > 0 else np.nan
+            ),
+            num_valid_ending_rit_score=('ending_rit_score', 'count'),
+            mean_ending_rit_score=('ending_rit_score', 'mean'),
+            mean_ending_rit_score_se=(
+                'ending_rit_score_sem',
+                lambda x: np.sqrt(np.nansum(np.square(x))/np.sum(np.isfinite(x))**2) if np.sum(np.isfinite(x)) > 0 else np.nan
+            ),
             num_valid_rit_score_growth=('rit_score_growth', 'count'),
             mean_rit_score_growth=('rit_score_growth', 'mean'),
             mean_rit_score_growth_se=(
@@ -527,6 +539,12 @@ def summarize_by_group(
     groups = groups.loc[groups['num_test_results'] > 0].copy()
     groups = groups.reindex(columns=[
         'num_test_results',
+        'num_valid_starting_rit_score',
+        'mean_starting_rit_score',
+        'mean_starting_rit_score_se',
+        'num_valid_ending_rit_score',
+        'mean_ending_rit_score',
+        'mean_ending_rit_score_se',
         'num_valid_rit_score_growth',
         'mean_rit_score_growth',
         'mean_rit_score_growth_se',
