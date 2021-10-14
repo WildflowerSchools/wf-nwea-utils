@@ -489,46 +489,54 @@ def summarize_by_group(
             num_test_results=('student_id_nwea', 'count'),
             num_valid_starting_rit_score=('starting_rit_score', 'count'),
             mean_starting_rit_score=('starting_rit_score', 'mean'),
+            starting_rit_score_sd=('starting_rit_score', 'std'),
             mean_starting_rit_score_se=(
                 'starting_rit_score_sem',
                 lambda x: np.sqrt(np.nansum(np.square(x))/np.sum(np.isfinite(x))**2) if np.sum(np.isfinite(x)) > 0 else np.nan
             ),
             num_valid_ending_rit_score=('ending_rit_score', 'count'),
             mean_ending_rit_score=('ending_rit_score', 'mean'),
+            ending_rit_score_sd=('ending_rit_score', 'std'),
             mean_ending_rit_score_se=(
                 'ending_rit_score_sem',
                 lambda x: np.sqrt(np.nansum(np.square(x))/np.sum(np.isfinite(x))**2) if np.sum(np.isfinite(x)) > 0 else np.nan
             ),
             num_valid_rit_score_growth=('rit_score_growth', 'count'),
             mean_rit_score_growth=('rit_score_growth', 'mean'),
+            rit_score_growth_sd=('rit_score_growth', 'std'),
             mean_rit_score_growth_se=(
                 'rit_score_growth_se',
                 lambda x: np.sqrt(np.nansum(np.square(x))/np.sum(np.isfinite(x))**2) if np.sum(np.isfinite(x)) > 0 else np.nan
             ),
             mean_rit_score_growth_per_school_year=('rit_score_growth_per_school_year', 'mean'),
+            rit_score_growth_per_school_year_sd=('rit_score_growth_per_school_year', 'std'),
             mean_rit_score_growth_per_school_year_se=(
                 'rit_score_growth_per_school_year_se',
                 lambda x: np.sqrt(np.nansum(np.square(x))/np.sum(np.isfinite(x))**2) if np.sum(np.isfinite(x)) > 0 else np.nan
             ),
             num_valid_starting_percentile=('starting_percentile', 'count'),
             mean_starting_percentile=('starting_percentile', 'mean'),
+            starting_percentile_sd=('starting_percentile', 'std'),
             mean_starting_percentile_se=(
                 'starting_percentile_se',
                 lambda x: np.sqrt(np.nansum(np.square(x))/np.sum(np.isfinite(x))**2) if np.sum(np.isfinite(x)) > 0 else np.nan
             ),
             num_valid_ending_percentile=('ending_percentile', 'count'),
             mean_ending_percentile=('ending_percentile', 'mean'),
+            ending_percentile_sd=('ending_percentile', 'std'),
             mean_ending_percentile_se=(
                 'ending_percentile_se',
                 lambda x: np.sqrt(np.nansum(np.square(x))/np.sum(np.isfinite(x))**2) if np.sum(np.isfinite(x)) > 0 else np.nan
             ),
             num_valid_percentile_growth=('percentile_growth', 'count'),
             mean_percentile_growth=('percentile_growth', 'mean'),
+            percentile_growth_sd=('percentile_growth', 'std'),
             mean_percentile_growth_se=(
                 'percentile_growth_se',
                 lambda x: np.sqrt(np.nansum(np.square(x))/np.sum(np.isfinite(x))**2) if np.sum(np.isfinite(x)) > 0 else np.nan
             ),
             mean_percentile_growth_per_school_year=('percentile_growth_per_school_year', 'mean'),
+            percentile_growth_per_school_year_sd=('percentile_growth_per_school_year', 'std'),
             mean_percentile_growth_per_school_year_se=(
                 'percentile_growth_per_school_year_se',
                 lambda x: np.sqrt(np.nansum(np.square(x))/np.sum(np.isfinite(x))**2) if np.sum(np.isfinite(x)) > 0 else np.nan
@@ -541,25 +549,33 @@ def summarize_by_group(
         'num_test_results',
         'num_valid_starting_rit_score',
         'mean_starting_rit_score',
+        'starting_rit_score_sd',
         'mean_starting_rit_score_se',
         'num_valid_ending_rit_score',
         'mean_ending_rit_score',
+        'ending_rit_score_sd',
         'mean_ending_rit_score_se',
         'num_valid_rit_score_growth',
         'mean_rit_score_growth',
+        'rit_score_growth_sd',
         'mean_rit_score_growth_se',
         'mean_rit_score_growth_per_school_year',
+        'rit_score_growth_per_school_year_sd',
         'mean_rit_score_growth_per_school_year_se',
         'num_valid_starting_percentile',
         'mean_starting_percentile',
+        'starting_percentile_sd',
         'mean_starting_percentile_se',
         'num_valid_ending_percentile',
         'mean_ending_percentile',
+        'ending_percentile_sd',
         'mean_ending_percentile_se',
         'num_valid_percentile_growth',
         'mean_percentile_growth',
+        'percentile_growth_sd',
         'mean_percentile_growth_se',
         'mean_percentile_growth_per_school_year',
+        'percentile_growth_per_school_year_sd',
         'mean_percentile_growth_per_school_year_se'
     ])
     if filter_dict is not None:
