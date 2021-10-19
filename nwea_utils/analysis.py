@@ -545,37 +545,77 @@ def summarize_by_group(
         .dropna(how='all')
     )
     groups = groups.loc[groups['num_test_results'] > 0].copy()
+    groups['mean_starting_rit_score_sem'] = np.divide(
+        groups['starting_rit_score_sd'],
+        np.sqrt(groups['num_valid_starting_rit_score'])
+    )
+    groups['mean_ending_rit_score_sem'] = np.divide(
+        groups['ending_rit_score_sd'],
+        np.sqrt(groups['num_valid_ending_rit_score'])
+    )
+    groups['mean_rit_score_growth_sem'] = np.divide(
+        groups['rit_score_growth_sd'],
+        np.sqrt(groups['num_valid_rit_score_growth'])
+    )
+    groups['mean_rit_score_growth_per_school_year_sem'] = np.divide(
+        groups['rit_score_growth_per_school_year_sd'],
+        np.sqrt(groups['num_valid_rit_score_growth'])
+    )
+    groups['mean_starting_percentile_sem'] = np.divide(
+        groups['starting_percentile_sd'],
+        np.sqrt(groups['num_valid_starting_percentile'])
+    )
+    groups['mean_ending_percentile_sem'] = np.divide(
+        groups['ending_percentile_sd'],
+        np.sqrt(groups['num_valid_ending_percentile'])
+    )
+    groups['mean_percentile_growth_sem'] = np.divide(
+        groups['percentile_growth_sd'],
+        np.sqrt(groups['num_valid_percentile_growth'])
+    )
+    groups['mean_percentile_growth_per_school_year_sem'] = np.divide(
+        groups['percentile_growth_per_school_year_sd'],
+        np.sqrt(groups['num_valid_percentile_growth'])
+    )
     groups = groups.reindex(columns=[
         'num_test_results',
         'num_valid_starting_rit_score',
         'mean_starting_rit_score',
         'starting_rit_score_sd',
+        'mean_starting_rit_score_sem',
         'mean_starting_rit_score_se',
         'num_valid_ending_rit_score',
         'mean_ending_rit_score',
         'ending_rit_score_sd',
+        'mean_ending_rit_score_sem',
         'mean_ending_rit_score_se',
         'num_valid_rit_score_growth',
         'mean_rit_score_growth',
         'rit_score_growth_sd',
+        'mean_rit_score_growth_sem',
         'mean_rit_score_growth_se',
         'mean_rit_score_growth_per_school_year',
         'rit_score_growth_per_school_year_sd',
+        'mean_rit_score_growth_per_school_year_sem',
         'mean_rit_score_growth_per_school_year_se',
         'num_valid_starting_percentile',
         'mean_starting_percentile',
         'starting_percentile_sd',
+        'mean_starting_percentile_sem',
         'mean_starting_percentile_se',
         'num_valid_ending_percentile',
         'mean_ending_percentile',
         'ending_percentile_sd',
+        'mean_ending_percentile_sem',
         'mean_ending_percentile_se',
         'num_valid_percentile_growth',
         'mean_percentile_growth',
         'percentile_growth_sd',
+        'mean_percentile_growth_sem',
         'mean_percentile_growth_se',
         'mean_percentile_growth_per_school_year',
         'percentile_growth_per_school_year_sd',
+        'mean_percentile_growth_per_school_year_sem',
         'mean_percentile_growth_per_school_year_se'
     ])
     if filter_dict is not None:
