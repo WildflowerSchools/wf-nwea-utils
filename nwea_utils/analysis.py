@@ -643,3 +643,210 @@ def calculate_score_growth_per_school_year(
         return np.nan
     score_growth_per_school_year = (365.25*(school_year_duration_months/12)/days_between_tests)*score_growth
     return score_growth_per_school_year
+
+def format_group_summary(
+    groups,
+    index_names=None
+):
+    groups_formatted = groups.copy()
+    groups_formatted['ending_rit_score_error_range'] = groups_formatted.apply(
+        lambda row: '{:.1f}-{:.1f}'.format(
+            row['mean_ending_rit_score'] - row ['mean_ending_rit_score_sem'],
+            row['mean_ending_rit_score'] + row ['mean_ending_rit_score_sem'],
+        ) if pd.notna(row['mean_ending_rit_score_sem']) else '',
+        axis=1
+    )
+    groups_formatted['ending_percentile_error_range'] = groups_formatted.apply(
+        lambda row: '{:.1f}-{:.1f}'.format(
+            row['mean_ending_percentile'] - row ['mean_ending_percentile_sem'],
+            row['mean_ending_percentile'] + row ['mean_ending_percentile_sem'],
+        ) if pd.notna(row['mean_ending_percentile_sem']) else '',
+        axis=1
+    )
+    groups_formatted['rit_score_growth_per_school_year_error_range'] = groups_formatted.apply(
+        lambda row: '{:.1f}-{:.1f}'.format(
+            row['mean_rit_score_growth_per_school_year'] - row ['mean_rit_score_growth_per_school_year_sem'],
+            row['mean_rit_score_growth_per_school_year'] + row ['mean_rit_score_growth_per_school_year_sem']
+        ) if pd.notna(row['mean_rit_score_growth_per_school_year_sem']) else '',
+        axis=1
+    )
+    groups_formatted['percentile_growth_per_school_year_error_range'] = groups_formatted.apply(
+        lambda row: '{:.1f}-{:.1f}'.format(
+            row['mean_percentile_growth_per_school_year'] - row ['mean_percentile_growth_per_school_year_sem'],
+            row['mean_percentile_growth_per_school_year'] + row ['mean_percentile_growth_per_school_year_sem']
+        ) if pd.notna(row['mean_percentile_growth_per_school_year_sem']) else '',
+        axis=1
+    )
+    groups_formatted['mean_ending_rit_score'] = (
+        groups_formatted['mean_ending_rit_score']
+        .apply(lambda x: '{:.1f}'.format(x))
+    )
+    groups_formatted['mean_ending_rit_score_sem'] = (
+        groups_formatted['mean_ending_rit_score_sem']
+        .apply(lambda x: '{:.1f}'.format(x) if pd.notna(x) else '')
+    )
+    groups_formatted['mean_ending_percentile'] = (
+        groups_formatted['mean_ending_percentile']
+        .apply(lambda x: '{:.1f}'.format(x))
+    )
+    groups_formatted['mean_ending_percentile_sem'] = (
+        groups_formatted['mean_ending_percentile_sem']
+        .apply(lambda x: '{:.1f}'.format(x) if pd.notna(x) else '')
+    )
+    groups_formatted['mean_rit_score_growth_per_school_year'] = (
+        groups_formatted['mean_rit_score_growth_per_school_year']
+        .apply(lambda x: '{:+.1f}'.format(x))
+    )
+    groups_formatted['mean_rit_score_growth_per_school_year_sem'] = (
+        groups_formatted['mean_rit_score_growth_per_school_year_sem']
+        .apply(lambda x: '{:.1f}'.format(x) if pd.notna(x) else '')
+    )
+    groups_formatted['mean_percentile_growth_per_school_year'] = (
+        groups_formatted['mean_percentile_growth_per_school_year']
+        .apply(lambda x: '{:+.1f}'.format(x))
+    )
+    groups_formatted['mean_percentile_growth_per_school_year_sem'] = (
+        groups_formatted['mean_percentile_growth_per_school_year_sem']
+        .apply(lambda x: '{:.1f}'.format(x) if pd.notna(x) else '')
+    )
+    groups_formatted = (
+        groups_formatted
+        .reindex(columns=[
+            'num_valid_ending_rit_score',
+            'mean_ending_rit_score',
+            'mean_ending_rit_score_sem',
+            'ending_rit_score_error_range',
+            'num_valid_ending_percentile',
+            'mean_ending_percentile',
+            'mean_ending_percentile_sem',
+            'ending_percentile_error_range',
+            'num_valid_rit_score_growth',
+            'mean_rit_score_growth_per_school_year',
+            'mean_rit_score_growth_per_school_year_sem',
+            'rit_score_growth_per_school_year_error_range',
+            'num_valid_percentile_growth',
+            'mean_percentile_growth_per_school_year',
+            'mean_percentile_growth_per_school_year_sem',
+            'percentile_growth_per_school_year_error_range'
+        ])
+    )
+    groups_formatted.columns = pd.MultiIndex.from_product([
+        ['Attainment', 'Growth per year'],
+        ['Raw score', 'Percentile'],
+        ['N', 'Avg', 'SEM', 'Error range']
+    ])
+    if index_names is not None:
+        groups_formatted.index.names=index_names
+    return groups_formatted
+
+
+def format_student_summary(
+    students
+):
+    students_formatted = students.copy()
+    students_formatted['rit_score_num_days'] = (
+        students_formatted['rit_score_num_days']
+        .apply(lambda x: '{:.0f}'.format(x) if pd.notna(x) else '')
+    )
+    students_formatted['starting_rit_score'] = (
+        students_formatted['starting_rit_score']
+        .apply(lambda x: '{:.0f}'.format(x) if pd.notna(x) else '')
+    )
+    students_formatted['ending_rit_score'] = (
+        students_formatted['ending_rit_score']
+        .apply(lambda x: '{:.0f}'.format(x) if pd.notna(x) else '')
+    )
+    students_formatted['rit_score_growth'] = (
+        students_formatted['rit_score_growth']
+        .apply(lambda x: '{:.0f}'.format(x) if pd.notna(x) else '')
+    )
+    students_formatted['rit_score_growth_per_school_year'] = (
+        students_formatted['rit_score_growth_per_school_year']
+        .apply(lambda x: '{:.1f}'.format(x) if pd.notna(x) else '')
+    )
+    students_formatted['percentile_num_days'] = (
+        students_formatted['percentile_num_days']
+        .apply(lambda x: '{:.0f}'.format(x) if pd.notna(x) else '')
+    )
+    students_formatted['starting_percentile'] = (
+        students_formatted['starting_percentile']
+        .apply(lambda x: '{:.0f}'.format(x) if pd.notna(x) else '')
+    )
+    students_formatted['ending_percentile'] = (
+        students_formatted['ending_percentile']
+        .apply(lambda x: '{:.0f}'.format(x) if pd.notna(x) else '')
+    )
+    students_formatted['percentile_growth'] = (
+        students_formatted['percentile_growth']
+        .apply(lambda x: '{:.0f}'.format(x) if pd.notna(x) else '')
+    )
+    students_formatted['percentile_growth_per_school_year'] = (
+        students_formatted['percentile_growth_per_school_year']
+        .apply(lambda x: '{:.1f}'.format(x) if pd.notna(x) else '')
+    )
+    students_formatted = (
+        students_formatted
+        .reset_index()
+        .reindex(columns=[
+            'subject',
+            'course',
+            'legal_entity',
+            'school',
+            'classroom',
+            'teacher_last_first',
+            'student_id_nwea',
+            'first_name',
+            'last_name',
+            'grade',
+            'rit_score_starting_date',
+            'rit_score_ending_date',
+            'rit_score_num_days',
+            'starting_rit_score',
+            'ending_rit_score',
+            'rit_score_growth',
+            'rit_score_growth_per_school_year',
+            'percentile_starting_date',
+            'percentile_ending_date',
+            'percentile_num_days',
+            'starting_percentile',
+            'ending_percentile',
+            'percentile_growth',
+            'percentile_growth_per_school_year'
+        ])
+        .sort_values([
+            'subject',
+            'course',
+            'legal_entity',
+            'school',
+            'classroom',
+            'teacher_last_first',
+            'last_name',
+        ])
+        .rename(columns={
+            'subject': 'Subject',
+            'course': 'Course',
+            'legal_entity': 'Legal entity',
+            'school': 'School',
+            'classroom': 'Classroom',
+            'teacher_last_first': 'Teacher',
+            'student_id_nwea': 'Student ID',
+            'first_name': 'First name',
+            'last_name': 'Last name',
+            'grade': 'Grade',
+            'rit_score_starting_date': 'RIT score starting date',
+            'rit_score_ending_date': 'RIT score ending date',
+            'rit_score_num_days': 'RIT score days between tests',
+            'starting_rit_score': 'Starting RIT score',
+            'ending_rit_score': 'Ending RIT score',
+            'rit_score_growth': 'RIT score growth',
+            'rit_score_growth_per_school_year': 'RIT score growth per school year',
+            'percentile_starting_date': 'Percentile starting date',
+            'percentile_ending_date': 'Percentile ending date',
+            'percentile_num_days': 'Percentile days between tests',
+            'starting_percentile': 'Starting percentile',
+            'ending_percentile': 'Ending percentile',
+            'percentile_growth': 'Percentile growth',
+            'percentile_growth_per_school_year': 'Percentile growth per school year',
+        })
+    )
+    return students_formatted
