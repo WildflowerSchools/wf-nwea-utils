@@ -695,7 +695,7 @@ def format_group_summary(
     )
     groups_formatted['mean_rit_score_growth_per_school_year'] = (
         groups_formatted['mean_rit_score_growth_per_school_year']
-        .apply(lambda x: '{:+.1f}'.format(x))
+        .apply(lambda x: '{:+.1f}'.format(x) if pd.notna(x) else '')
     )
     groups_formatted['mean_rit_score_growth_per_school_year_sem'] = (
         groups_formatted['mean_rit_score_growth_per_school_year_sem']
@@ -703,7 +703,7 @@ def format_group_summary(
     )
     groups_formatted['mean_percentile_growth_per_school_year'] = (
         groups_formatted['mean_percentile_growth_per_school_year']
-        .apply(lambda x: '{:+.1f}'.format(x))
+        .apply(lambda x: '{:+.1f}'.format(x) if pd.notna(x) else '')
     )
     groups_formatted['mean_percentile_growth_per_school_year_sem'] = (
         groups_formatted['mean_percentile_growth_per_school_year_sem']
