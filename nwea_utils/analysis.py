@@ -1,6 +1,7 @@
 import wf_core_data.utils
 import pandas as pd
 import numpy as np
+import scipy.stats
 import inflection
 import collections
 import itertools
@@ -378,14 +379,16 @@ def summarize_by_student(
         students['ending_rit_score'],
         students['starting_rit_score']
     )
-    students['rit_score_growth_se'] = np.sqrt(np.add(
-        np.square(students['starting_rit_score_sem']),
-        np.square(students['ending_rit_score_sem'])
-    ))
     students.loc[students['rit_score_num_days'] < min_growth_days, 'rit_score_growth'] = np.nan
-    students.loc[students['rit_score_num_days'] < min_growth_days, 'rit_score_growth_se'] = np.nan
-    students['rit_score_growth_per_school_year'] = 365.25*(school_year_duration_months/12)*students['rit_score_growth']/students['rit_score_num_days']
-    students['rit_score_growth_per_school_year_se'] = 365.25*(school_year_duration_months/12)*students['rit_score_growth_se']/students['rit_score_num_days']
+    students['rit_score_growth_per_school_year'] = students.apply(
+        lambda row: calculate_score_growth_per_school_year(
+            score_growth=row['rit_score_growth'],
+            days_between_tests=row['rit_score_num_days'],
+            min_growth_days=min_growth_days,
+            school_year_duration_months=school_year_duration_months
+        ),
+        axis=1
+    )
     students['percentile_num_days'] = (
         np.subtract(
             students['percentile_ending_date'],
@@ -397,14 +400,26 @@ def summarize_by_student(
         students['ending_percentile'],
         students['starting_percentile']
     )
-    students['percentile_growth_se'] = np.sqrt(np.add(
-        np.square(students['starting_percentile_se']),
-        np.square(students['ending_percentile_se'])
-    ))
     students.loc[students['percentile_num_days'] < min_growth_days, 'percentile_growth'] = np.nan
-    students.loc[students['percentile_num_days'] < min_growth_days, 'percentile_growth_se'] = np.nan
-    students['percentile_growth_per_school_year'] = 365.25*(school_year_duration_months/12)*students['percentile_growth']/students['percentile_num_days']
-    students['percentile_growth_per_school_year_se'] = 365.25*(school_year_duration_months/12)*students['percentile_growth_se']/students['percentile_num_days']
+    students['percentile_growth_per_school_year'] = students.apply(
+        lambda row: calculate_percentile_growth_per_school_year(
+            starting_percentile=row['starting_percentile'],
+            ending_percentile=row['ending_percentile'],
+            days_between_tests=row['rit_score_num_days'],
+            min_growth_days=min_growth_days,
+            school_year_duration_months=school_year_duration_months
+        ),
+        axis=1
+    )
+    students['percentile_growth_per_school_year_linear_scaling'] = students.apply(
+        lambda row: calculate_score_growth_per_school_year(
+            score_growth=row['percentile_growth'],
+            days_between_tests=row['percentile_num_days'],
+            min_growth_days=min_growth_days,
+            school_year_duration_months=school_year_duration_months
+        ),
+        axis=1
+    )
     students = students.join(
         student_info,
         how='left',
@@ -442,9 +457,7 @@ def summarize_by_student(
             'ending_rit_score',
             'ending_rit_score_sem',
             'rit_score_growth',
-            'rit_score_growth_se',
             'rit_score_growth_per_school_year',
-            'rit_score_growth_per_school_year_se',
             'percentile_starting_date',
             'percentile_ending_date',
             'percentile_num_days',
@@ -453,9 +466,8 @@ def summarize_by_student(
             'ending_percentile',
             'ending_percentile_se',
             'percentile_growth',
-            'percentile_growth_se',
             'percentile_growth_per_school_year',
-            'percentile_growth_per_school_year_se'
+            'percentile_growth_per_school_year_linear_scaling'
         ]
     )))
     if filter_dict is not None:
@@ -490,57 +502,27 @@ def summarize_by_group(
             num_valid_starting_rit_score=('starting_rit_score', 'count'),
             mean_starting_rit_score=('starting_rit_score', 'mean'),
             starting_rit_score_sd=('starting_rit_score', 'std'),
-            mean_starting_rit_score_se=(
-                'starting_rit_score_sem',
-                lambda x: np.sqrt(np.nansum(np.square(x))/np.sum(np.isfinite(x))**2) if np.sum(np.isfinite(x)) > 0 else np.nan
-            ),
             num_valid_ending_rit_score=('ending_rit_score', 'count'),
             mean_ending_rit_score=('ending_rit_score', 'mean'),
             ending_rit_score_sd=('ending_rit_score', 'std'),
-            mean_ending_rit_score_se=(
-                'ending_rit_score_sem',
-                lambda x: np.sqrt(np.nansum(np.square(x))/np.sum(np.isfinite(x))**2) if np.sum(np.isfinite(x)) > 0 else np.nan
-            ),
             num_valid_rit_score_growth=('rit_score_growth', 'count'),
             mean_rit_score_growth=('rit_score_growth', 'mean'),
             rit_score_growth_sd=('rit_score_growth', 'std'),
-            mean_rit_score_growth_se=(
-                'rit_score_growth_se',
-                lambda x: np.sqrt(np.nansum(np.square(x))/np.sum(np.isfinite(x))**2) if np.sum(np.isfinite(x)) > 0 else np.nan
-            ),
             mean_rit_score_growth_per_school_year=('rit_score_growth_per_school_year', 'mean'),
             rit_score_growth_per_school_year_sd=('rit_score_growth_per_school_year', 'std'),
-            mean_rit_score_growth_per_school_year_se=(
-                'rit_score_growth_per_school_year_se',
-                lambda x: np.sqrt(np.nansum(np.square(x))/np.sum(np.isfinite(x))**2) if np.sum(np.isfinite(x)) > 0 else np.nan
-            ),
             num_valid_starting_percentile=('starting_percentile', 'count'),
             mean_starting_percentile=('starting_percentile', 'mean'),
             starting_percentile_sd=('starting_percentile', 'std'),
-            mean_starting_percentile_se=(
-                'starting_percentile_se',
-                lambda x: np.sqrt(np.nansum(np.square(x))/np.sum(np.isfinite(x))**2) if np.sum(np.isfinite(x)) > 0 else np.nan
-            ),
             num_valid_ending_percentile=('ending_percentile', 'count'),
             mean_ending_percentile=('ending_percentile', 'mean'),
             ending_percentile_sd=('ending_percentile', 'std'),
-            mean_ending_percentile_se=(
-                'ending_percentile_se',
-                lambda x: np.sqrt(np.nansum(np.square(x))/np.sum(np.isfinite(x))**2) if np.sum(np.isfinite(x)) > 0 else np.nan
-            ),
             num_valid_percentile_growth=('percentile_growth', 'count'),
             mean_percentile_growth=('percentile_growth', 'mean'),
             percentile_growth_sd=('percentile_growth', 'std'),
-            mean_percentile_growth_se=(
-                'percentile_growth_se',
-                lambda x: np.sqrt(np.nansum(np.square(x))/np.sum(np.isfinite(x))**2) if np.sum(np.isfinite(x)) > 0 else np.nan
-            ),
             mean_percentile_growth_per_school_year=('percentile_growth_per_school_year', 'mean'),
             percentile_growth_per_school_year_sd=('percentile_growth_per_school_year', 'std'),
-            mean_percentile_growth_per_school_year_se=(
-                'percentile_growth_per_school_year_se',
-                lambda x: np.sqrt(np.nansum(np.square(x))/np.sum(np.isfinite(x))**2) if np.sum(np.isfinite(x)) > 0 else np.nan
-            )
+            mean_percentile_growth_per_school_year_linear_scaling=('percentile_growth_per_school_year_linear_scaling', 'mean'),
+            percentile_growth_per_school_year_linear_scaling_sd=('percentile_growth_per_school_year_linear_scaling', 'std'),
         )
         .dropna(how='all')
     )
@@ -577,46 +559,45 @@ def summarize_by_group(
         groups['percentile_growth_per_school_year_sd'],
         np.sqrt(groups['num_valid_percentile_growth'])
     )
+    groups['mean_percentile_growth_per_school_year_linear_scaling_sem'] = np.divide(
+        groups['percentile_growth_per_school_year_linear_scaling_sd'],
+        np.sqrt(groups['num_valid_percentile_growth'])
+    )
     groups = groups.reindex(columns=[
         'num_test_results',
         'num_valid_starting_rit_score',
         'mean_starting_rit_score',
         'starting_rit_score_sd',
         'mean_starting_rit_score_sem',
-        'mean_starting_rit_score_se',
         'num_valid_ending_rit_score',
         'mean_ending_rit_score',
         'ending_rit_score_sd',
         'mean_ending_rit_score_sem',
-        'mean_ending_rit_score_se',
         'num_valid_rit_score_growth',
         'mean_rit_score_growth',
         'rit_score_growth_sd',
         'mean_rit_score_growth_sem',
-        'mean_rit_score_growth_se',
         'mean_rit_score_growth_per_school_year',
         'rit_score_growth_per_school_year_sd',
         'mean_rit_score_growth_per_school_year_sem',
-        'mean_rit_score_growth_per_school_year_se',
         'num_valid_starting_percentile',
         'mean_starting_percentile',
         'starting_percentile_sd',
         'mean_starting_percentile_sem',
-        'mean_starting_percentile_se',
         'num_valid_ending_percentile',
         'mean_ending_percentile',
         'ending_percentile_sd',
         'mean_ending_percentile_sem',
-        'mean_ending_percentile_se',
         'num_valid_percentile_growth',
         'mean_percentile_growth',
         'percentile_growth_sd',
         'mean_percentile_growth_sem',
-        'mean_percentile_growth_se',
         'mean_percentile_growth_per_school_year',
         'percentile_growth_per_school_year_sd',
         'mean_percentile_growth_per_school_year_sem',
-        'mean_percentile_growth_per_school_year_se'
+        'mean_percentile_growth_per_school_year_linear_scaling',
+        'percentile_growth_per_school_year_linear_scaling_sd',
+        'mean_percentile_growth_per_school_year_linear_scaling_sem'
     ])
     if filter_dict is not None:
         groups = wf_core_data.utils.filter_dataframe(
@@ -629,3 +610,36 @@ def summarize_by_group(
             select_dict=select_dict
         )
     return groups
+
+def calculate_percentile_growth_per_school_year(
+    starting_percentile,
+    ending_percentile,
+    days_between_tests,
+    min_growth_days=DEFAULT_MIN_GROWTH_DAYS,
+    school_year_duration_months=DEFAULT_SCHOOL_YEAR_DURATION_MONTHS
+):
+    if days_between_tests < min_growth_days:
+        return np.nan
+    starting_z = scipy.stats.norm.ppf(starting_percentile/100.0)
+    ending_z = scipy.stats.norm.ppf(ending_percentile/100.0)
+    z_growth = ending_z - starting_z
+    z_growth_per_school_year = calculate_score_growth_per_school_year(
+        score_growth=z_growth,
+        days_between_tests=days_between_tests,
+        school_year_duration_months=school_year_duration_months
+    )
+    ending_z_school_year = starting_z + z_growth_per_school_year
+    ending_percentile_school_year = scipy.stats.norm.cdf(ending_z_school_year)*100.0
+    percentile_growth_per_school_year = ending_percentile_school_year - starting_percentile
+    return percentile_growth_per_school_year
+
+def calculate_score_growth_per_school_year(
+    score_growth,
+    days_between_tests,
+    min_growth_days=DEFAULT_MIN_GROWTH_DAYS,
+    school_year_duration_months=DEFAULT_SCHOOL_YEAR_DURATION_MONTHS
+):
+    if days_between_tests < min_growth_days:
+        return np.nan
+    score_growth_per_school_year = (365.25*(school_year_duration_months/12)/days_between_tests)*score_growth
+    return score_growth_per_school_year
