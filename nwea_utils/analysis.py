@@ -1,7 +1,7 @@
 import wf_core_data.utils
 import pandas as pd
 import numpy as np
-import scipy.stats
+# import scipy.stats
 import inflection
 import collections
 import itertools
@@ -68,7 +68,6 @@ SUBJECTS = list(ASSESSMENTS.keys())
 COURSES=list(itertools.chain(*ASSESSMENTS.values()))
 
 DEFAULT_MIN_GROWTH_DAYS = 120
-
 DEFAULT_SCHOOL_YEAR_DURATION_MONTHS = 9
 
 def fetch_results_local_directory(
@@ -381,7 +380,7 @@ def summarize_by_student(
     )
     students.loc[students['rit_score_num_days'] < min_growth_days, 'rit_score_growth'] = np.nan
     students['rit_score_growth_per_school_year'] = students.apply(
-        lambda row: calculate_score_growth_per_school_year(
+        lambda row: wf_core_data.utils.calculate_score_growth_per_school_year(
             score_growth=row['rit_score_growth'],
             days_between_tests=row['rit_score_num_days'],
             min_growth_days=min_growth_days,
@@ -402,7 +401,7 @@ def summarize_by_student(
     )
     students.loc[students['percentile_num_days'] < min_growth_days, 'percentile_growth'] = np.nan
     students['percentile_growth_per_school_year'] = students.apply(
-        lambda row: calculate_percentile_growth_per_school_year(
+        lambda row: wf_core_data.utils.calculate_percentile_growth_per_school_year(
             starting_percentile=row['starting_percentile'],
             ending_percentile=row['ending_percentile'],
             days_between_tests=row['rit_score_num_days'],
@@ -412,7 +411,7 @@ def summarize_by_student(
         axis=1
     )
     students['percentile_growth_per_school_year_linear_scaling'] = students.apply(
-        lambda row: calculate_score_growth_per_school_year(
+        lambda row: wf_core_data.utils.calculate_score_growth_per_school_year(
             score_growth=row['percentile_growth'],
             days_between_tests=row['percentile_num_days'],
             min_growth_days=min_growth_days,
@@ -610,39 +609,6 @@ def summarize_by_group(
             select_dict=select_dict
         )
     return groups
-
-def calculate_percentile_growth_per_school_year(
-    starting_percentile,
-    ending_percentile,
-    days_between_tests,
-    min_growth_days=DEFAULT_MIN_GROWTH_DAYS,
-    school_year_duration_months=DEFAULT_SCHOOL_YEAR_DURATION_MONTHS
-):
-    if days_between_tests < min_growth_days:
-        return np.nan
-    starting_z = scipy.stats.norm.ppf(starting_percentile/100.0)
-    ending_z = scipy.stats.norm.ppf(ending_percentile/100.0)
-    z_growth = ending_z - starting_z
-    z_growth_per_school_year = calculate_score_growth_per_school_year(
-        score_growth=z_growth,
-        days_between_tests=days_between_tests,
-        school_year_duration_months=school_year_duration_months
-    )
-    ending_z_school_year = starting_z + z_growth_per_school_year
-    ending_percentile_school_year = scipy.stats.norm.cdf(ending_z_school_year)*100.0
-    percentile_growth_per_school_year = ending_percentile_school_year - starting_percentile
-    return percentile_growth_per_school_year
-
-def calculate_score_growth_per_school_year(
-    score_growth,
-    days_between_tests,
-    min_growth_days=DEFAULT_MIN_GROWTH_DAYS,
-    school_year_duration_months=DEFAULT_SCHOOL_YEAR_DURATION_MONTHS
-):
-    if days_between_tests < min_growth_days:
-        return np.nan
-    score_growth_per_school_year = (365.25*(school_year_duration_months/12)/days_between_tests)*score_growth
-    return score_growth_per_school_year
 
 def format_group_summary(
     groups,
