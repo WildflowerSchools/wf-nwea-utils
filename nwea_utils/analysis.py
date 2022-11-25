@@ -630,14 +630,14 @@ def format_group_summary(
         axis=1
     )
     groups_formatted['rit_score_growth_per_school_year_error_range'] = groups_formatted.apply(
-        lambda row: '{:.1f}-{:.1f}'.format(
+        lambda row: '{:+.1f}-{:+.1f}'.format(
             row['mean_rit_score_growth_per_school_year'] - row ['mean_rit_score_growth_per_school_year_sem'],
             row['mean_rit_score_growth_per_school_year'] + row ['mean_rit_score_growth_per_school_year_sem']
         ) if pd.notna(row['mean_rit_score_growth_per_school_year_sem']) else '',
         axis=1
     )
     groups_formatted['percentile_growth_per_school_year_error_range'] = groups_formatted.apply(
-        lambda row: '{:.1f}-{:.1f}'.format(
+        lambda row: '{:+.1f}-{:+.1f}'.format(
             row['mean_percentile_growth_per_school_year'] - row ['mean_percentile_growth_per_school_year_sem'],
             row['mean_percentile_growth_per_school_year'] + row ['mean_percentile_growth_per_school_year_sem']
         ) if pd.notna(row['mean_percentile_growth_per_school_year_sem']) else '',
