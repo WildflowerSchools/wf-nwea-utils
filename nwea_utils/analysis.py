@@ -616,28 +616,28 @@ def format_group_summary(
 ):
     groups_formatted = groups.copy()
     groups_formatted['ending_rit_score_error_range'] = groups_formatted.apply(
-        lambda row: '{:.1f}-{:.1f}'.format(
+        lambda row: '{:.1f} \u2013 {:.1f}'.format(
             row['mean_ending_rit_score'] - row ['mean_ending_rit_score_sem'],
             row['mean_ending_rit_score'] + row ['mean_ending_rit_score_sem'],
         ) if pd.notna(row['mean_ending_rit_score_sem']) else '',
         axis=1
     )
     groups_formatted['ending_percentile_error_range'] = groups_formatted.apply(
-        lambda row: '{:.1f}-{:.1f}'.format(
+        lambda row: '{:.1f} \u2013 {:.1f}'.format(
             row['mean_ending_percentile'] - row ['mean_ending_percentile_sem'],
             row['mean_ending_percentile'] + row ['mean_ending_percentile_sem'],
         ) if pd.notna(row['mean_ending_percentile_sem']) else '',
         axis=1
     )
     groups_formatted['rit_score_growth_per_school_year_error_range'] = groups_formatted.apply(
-        lambda row: '{:+.1f}-{:+.1f}'.format(
+        lambda row: '{:+.1f} \u2013 {:+.1f}'.format(
             row['mean_rit_score_growth_per_school_year'] - row ['mean_rit_score_growth_per_school_year_sem'],
             row['mean_rit_score_growth_per_school_year'] + row ['mean_rit_score_growth_per_school_year_sem']
         ) if pd.notna(row['mean_rit_score_growth_per_school_year_sem']) else '',
         axis=1
     )
     groups_formatted['percentile_growth_per_school_year_error_range'] = groups_formatted.apply(
-        lambda row: '{:+.1f}-{:+.1f}'.format(
+        lambda row: '{:+.1f} \u2013 {:+.1f}'.format(
             row['mean_percentile_growth_per_school_year'] - row ['mean_percentile_growth_per_school_year_sem'],
             row['mean_percentile_growth_per_school_year'] + row ['mean_percentile_growth_per_school_year_sem']
         ) if pd.notna(row['mean_percentile_growth_per_school_year_sem']) else '',
